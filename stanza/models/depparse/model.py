@@ -159,6 +159,7 @@ class Parser(nn.Module):
         preds = []
 
         if self.training:
+            word_mask[:,1:] |= (head<0) # Prunes those words without assigned head!
             unlabeled_scores = unlabeled_scores[:, 1:, :] # exclude attachment for the root symbol
             unlabeled_scores = unlabeled_scores.masked_fill(word_mask.unsqueeze(1), -float('inf'))
             unlabeled_target = head.masked_fill(word_mask[:, 1:], -1)

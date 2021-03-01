@@ -133,8 +133,8 @@ class DataLoader:
             else:
                 processed_sent += [[ROOT_ID] + [PAD_ID] * len(sent)]
             processed_sent += [[ROOT_ID] + vocab['lemma'].map([w[4] for w in sent])]
-            processed_sent += [[to_int(w[5], ignore_error=self.eval) for w in sent]]
-            processed_sent += [vocab['deprel'].map([w[6] for w in sent])]
+            processed_sent += [[to_int(w[5], ignore_error=self.eval) for w in sent]] # Dependency head ID.
+            processed_sent += [vocab['deprel'].map([w[6] for w in sent])] # Dependency label.
             processed.append(processed_sent)
         return processed
 

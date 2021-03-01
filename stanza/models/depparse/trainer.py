@@ -48,6 +48,7 @@ class Trainer(BaseTrainer):
 
     def update(self, batch, eval=False):
         inputs, orig_idx, word_orig_idx, sentlens, wordlens = unpack_batch(batch, self.use_cuda)
+        # Here, I should deal with head and deprel for extra masking.
         word, word_mask, wordchars, wordchars_mask, upos, xpos, ufeats, pretrained, lemma, head, deprel = inputs
 
         if eval:
