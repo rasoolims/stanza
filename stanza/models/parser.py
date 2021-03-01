@@ -186,18 +186,20 @@ def train(args):
                 duration = time.time() - start_time
                 logger.info(format_str.format(global_step, max_steps, loss, duration, current_lr))
 
-            if global_step % args['eval_interval'] == 0 and gold_file is not None:
-                # eval on dev
-                logger.info("Evaluating on dev set...")
-                dev_preds = []
-                for batch in dev_batch:
-                    preds = trainer.predict(batch)
-                    dev_preds += preds
-                dev_preds = utils.unsort(dev_preds, dev_batch.data_orig_idx)
+            if global_step % args['eval_interval'] == 0:
+                dev_score = 0
+                if gold_file is not None:
+                    # eval on dev
+                    logger.info("Evaluating on dev set...")
+                    dev_preds = []
+                    for batch in dev_batch:
+                        preds = trainer.predict(batch)
+                        dev_preds += preds
+                    dev_preds = utils.unsort(dev_preds, dev_batch.data_orig_idx)
 
-                dev_batch.doc.set([HEAD, DEPREL], [y for x in dev_preds for y in x])
-                CoNLL.dict2conll(dev_batch.doc.to_dict(), system_pred_file)
-                _, _, dev_score = scorer.score(system_pred_file, gold_file)
+                    dev_batch.doc.set([HEAD, DEPREL], [y for x in dev_preds for y in x])
+                    CoNLL.dict2conll(dev_batch.doc.to_dict(), system_pred_file)
+                    _, _, dev_score = scorer.score(system_pred_file, gold_file)
 
                 train_loss = train_loss / args['eval_interval'] # avg loss per batch
                 logger.info("step {}: train_loss = {:.6f}, dev_score = {:.4f}".format(global_step, train_loss, dev_score))
