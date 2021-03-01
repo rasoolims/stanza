@@ -186,7 +186,7 @@ def train(args):
                 duration = time.time() - start_time
                 logger.info(format_str.format(global_step, max_steps, loss, duration, current_lr))
 
-            if global_step % args['eval_interval'] == 0:
+            if global_step % args['eval_interval'] == 0 and gold_file is not None:
                 # eval on dev
                 logger.info("Evaluating on dev set...")
                 dev_preds = []
