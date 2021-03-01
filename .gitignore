@@ -169,3 +169,5 @@ _site/
 
 # symlink / directory for data files
 extern_data
+*.xml
+*.iml
