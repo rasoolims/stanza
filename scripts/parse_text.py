@@ -13,7 +13,7 @@ def parse_args():
     parser.add_option('--output_file', type=str, default=None, help='Output CoNLL-U file.')
     parser.add_option('--input_file', type=str, default=None, help='Input text')
     parser.add_option('--lang', type=str, help='Language')
-    parser.add_option('--batch', type=int, help="number of sentences to process", default=200)
+    parser.add_option('--batch', type=int, help="number of sentences to process", default=500)
     parser.add_option('--cpu', action='store_true', help='Ignore CUDA.')
     (options, args) = parser.parse_args()
     return options
