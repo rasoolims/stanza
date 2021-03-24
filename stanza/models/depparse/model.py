@@ -164,7 +164,7 @@ class Parser(nn.Module):
             zero_heads = torch.zeros(head.size(),  dtype=head.dtype).to(head.device)
             head_positives = torch.max(head, zero_heads)
             unlabeled_scores = unlabeled_scores[:, 1:, :] # exclude attachment for the root symbol
-            unlabeled_scores = unlabeled_scores.masked_fill(word_mask.unsqueeze(1), -float('inf'))
+            # unlabeled_scores = unlabeled_scores.masked_fill(word_mask.unsqueeze(1), -float('inf'))
             unlabeled_target = head.masked_fill(word_mask[:, 1:], -1)
             loss = self.crit(unlabeled_scores.contiguous().view(-1, unlabeled_scores.size(2)), unlabeled_target.view(-1))
 
