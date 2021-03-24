@@ -160,6 +160,9 @@ class Parser(nn.Module):
 
         if self.training:
             word_mask[:,1:] |= (head<0) # Prunes those words without assigned head!
+            # For cleaning negatives from head: gather fails with -1 indices.
+            zero_heads = torch.zeros(head.size(),  dtype=head.dtype).to(head.device)
+            head_positives = torch.max(head, zero_heads)
             unlabeled_scores = unlabeled_scores[:, 1:, :] # exclude attachment for the root symbol
             unlabeled_scores = unlabeled_scores.masked_fill(word_mask.unsqueeze(1), -float('inf'))
             unlabeled_target = head.masked_fill(word_mask[:, 1:], -1)
@@ -167,21 +170,21 @@ class Parser(nn.Module):
 
             deprel_scores = deprel_scores[:, 1:] # exclude attachment for the root symbol
             #deprel_scores = deprel_scores.masked_select(goldmask.unsqueeze(3)).view(-1, len(self.vocab['deprel']))
-            deprel_scores = torch.gather(deprel_scores, 2, head.unsqueeze(2).unsqueeze(3).expand(-1, -1, -1, len(self.vocab['deprel']))).view(-1, len(self.vocab['deprel']))
+            deprel_scores = torch.gather(deprel_scores, 2, head_positives.unsqueeze(2).unsqueeze(3).expand(-1, -1, -1, len(self.vocab['deprel']))).view(-1, len(self.vocab['deprel']))
             deprel_target = deprel.masked_fill(word_mask[:, 1:], -1)
             loss += self.crit(deprel_scores.contiguous(), deprel_target.view(-1))
 
             if self.args['linearization']:
                 #lin_scores = lin_scores[:, 1:].masked_select(goldmask)
-                lin_scores = torch.gather(lin_scores[:, 1:], 2, head.unsqueeze(2)).view(-1)
+                lin_scores = torch.gather(lin_scores[:, 1:], 2, head_positives.unsqueeze(2)).view(-1)
                 lin_scores = torch.cat([-lin_scores.unsqueeze(1)/2, lin_scores.unsqueeze(1)/2], 1)
                 #lin_target = (head_offset[:, 1:] > 0).long().masked_select(goldmask)
-                lin_target = torch.gather((head_offset[:, 1:] > 0).long(), 2, head.unsqueeze(2))
+                lin_target = torch.gather((head_offset[:, 1:] > 0).long(), 2, head_positives.unsqueeze(2))
                 loss += self.crit(lin_scores.contiguous(), lin_target.view(-1))
 
             if self.args['distance']:
                 #dist_kld = dist_kld[:, 1:].masked_select(goldmask)
-                dist_kld = torch.gather(dist_kld[:, 1:], 2, head.unsqueeze(2))
+                dist_kld = torch.gather(dist_kld[:, 1:], 2, head_positives.unsqueeze(2))
                 loss -= dist_kld.sum()
 
             loss /= wordchars.size(0) # number of words
